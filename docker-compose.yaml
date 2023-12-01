@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: ws-postgres
+    environment:
+      POSTGRES_USER: secure_random_username
+      POSTGRES_PASSWORD: secure_random_password
+      POSTGRES_DB: chat
+    ports:
+      - "3001:5432"
+    expose:
+      - "5432"
+    healthcheck:
+      test: pg_isready -U secure_random_username -d chat
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: always
+
+  nsqlookupd:
+    image: nsqio/nsq
+    container_name: ws-nsqlookupd
+    command: /nsqlookupd
+    ports:
+      - "3002:4160"
+    expose:
+      - "4160"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4160"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nsqd:
+    image: nsqio/nsq
+    container_name: ws-nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
+    ports:
+      - "3003:4150"
+    expose:
+      - "4150"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4150"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nsqadmin:
+    image: nsqio/nsq
+    container_name: ws-nsqadmin
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    ports:
+      - "3004:4171"
+    expose:
+      - "4171"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4171"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  golang-migrate:
+    image: migrate/migrate
+    container_name: ws-golang-migrate
+    command: ["-path", "/migrations", "-database", "postgres://secure_random_username:secure_random_password@postgres/chat?sslmode=disable", "up"]
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  golang-app:
+    image: golang:latest
+    container_name: ws-golang-app
+    volumes:
+      - ./:/ws-chat-demo
+    working_dir: /ws-chat-demo
+    ports:
+      - "8080:8080"
+    command: bash -c "go mod tidy && go run cmd/app/main.go"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      golang-migrate:
+        condition: service_completed_successfully
+      nsqlookupd:
+        condition: service_healthy
+      nsqd:
+        condition: service_healthy
+      nsqadmin:
+        condition: service_healthy
