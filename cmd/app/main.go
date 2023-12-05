@@ -6,7 +6,6 @@ import (
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/chat_nsq"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 	"github.com/nickyrolly/ws-chat-demo/internal/router"
-	"github.com/nickyrolly/ws-chat-demo/internal/usecase"
 )
 
 func main() {
@@ -25,7 +24,5 @@ func main() {
 		log.Fatalf("Failed to init NSQ Consumer: %v", err)
 	}
 
-	chatBox := usecase.NewChatBox()
-	groupChatBox := usecase.NewGroupChatBox()
-	router.Init(chatBox, groupChatBox)
+	router.Init()
 }
