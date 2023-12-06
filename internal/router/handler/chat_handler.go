@@ -76,6 +76,8 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 	} else {
 		// Excercise 1
 		// please complete this block
+		// add client
+		// defer remove client
 	}
 
 	for {
