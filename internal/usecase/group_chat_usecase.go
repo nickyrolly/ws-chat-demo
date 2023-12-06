@@ -13,7 +13,7 @@ import (
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
-type groupConnmap map[int]userConnMap
+type groupConnmap map[int][]*websocket.Conn
 
 type GroupChatBox struct {
 	clients groupConnmap
@@ -26,64 +26,55 @@ func NewGroupChatBox() *GroupChatBox {
 	}
 }
 
-func (cb *GroupChatBox) AddClient(groupID, userID int, conn *websocket.Conn) {
+func (cb *GroupChatBox) AddClient(groupID int, conn *websocket.Conn) {
 	cb.mu.Lock()
 	if _, ok := cb.clients[groupID]; !ok {
-		cb.clients[groupID] = make(userConnMap)
+		cb.clients[groupID] = []*websocket.Conn{}
 	}
-	if _, ok := cb.clients[groupID][userID]; !ok {
-		cb.clients[groupID][userID] = []*websocket.Conn{}
-	}
-	cb.clients[groupID][userID] = append(cb.clients[groupID][userID], conn)
+	cb.clients[groupID] = append(cb.clients[groupID], conn)
 	log.Printf("Add client : %+v\n", cb.clients)
 	cb.mu.Unlock()
 }
 
-func (cb *GroupChatBox) RemoveClient(groupID, userID int, conn *websocket.Conn) {
+func (cb *GroupChatBox) RemoveClient(groupID int, conn *websocket.Conn) {
 	cb.mu.Lock()
 	if _, ok := cb.clients[groupID]; ok {
-		if _, ok := cb.clients[groupID][userID]; ok {
-			// Find conn index
-			idx := cb.findUserConn(groupID, userID, conn)
-			// Remove conn from slice if conn found
-			if idx != -1 {
-				cb.clients[groupID][userID] = append(cb.clients[groupID][userID][:idx], cb.clients[groupID][userID][idx+1:]...)
-			}
+		// Find conn index
+		idx := cb.findConn(groupID, conn)
+		// Remove conn from slice if conn found
+		if idx != -1 {
+			cb.clients[groupID] = append(cb.clients[groupID][:idx], cb.clients[groupID][idx+1:]...)
 		}
 	}
 	log.Printf("Remove client : %+v\n", cb.clients)
 	cb.mu.Unlock()
 }
 
-func (cb *GroupChatBox) Broadcast(userID, groupID int, curConn *websocket.Conn, message string) {
+func (cb *GroupChatBox) Broadcast(groupID int, curConn *websocket.Conn, message string) {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
 
-	log.Println("groupID :", groupID)
+	log.Println("chatboxID :", groupID)
 
-	// Send to destination group pools except for current user connection
-	for _, userConns := range cb.clients[groupID] {
-		for _, conn := range userConns {
-			if conn == curConn {
-				continue
-			}
+	// Send to chatbox user pools except for current connection
+	for _, conn := range cb.clients[groupID] {
+		if conn == curConn {
+			continue
+		}
 
-			err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-			if err != nil {
-				log.Println("Error broadcasting message to user :", err)
-			}
+		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+		if err != nil {
+			log.Println("Error broadcasting message to user :", err)
 		}
 	}
 
 	log.Printf("Broadcast clients : %+v\n", cb.clients)
 }
 
-func (cb *GroupChatBox) findUserConn(groupID, userID int, conn *websocket.Conn) int {
-	if _, ok := cb.clients[groupID]; ok {
-		for i, c := range cb.clients[groupID][userID] {
-			if c == conn {
-				return i
-			}
+func (cb *GroupChatBox) findConn(groupID int, conn *websocket.Conn) int {
+	for i, c := range cb.clients[groupID] {
+		if c == conn {
+			return i
 		}
 	}
 	return -1

@@ -13,7 +13,7 @@ import (
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
-type userConnMap map[int][]*websocket.Conn
+type userConnMap map[string][]*websocket.Conn
 
 type ChatBox struct {
 	clients userConnMap
@@ -26,46 +26,38 @@ func NewChatBox() *ChatBox {
 	}
 }
 
-func (cb *ChatBox) AddClient(userID int, conn *websocket.Conn) {
+func (cb *ChatBox) AddClient(chatboxID string, conn *websocket.Conn) {
 	cb.mu.Lock()
-	if _, ok := cb.clients[userID]; !ok {
-		cb.clients[userID] = []*websocket.Conn{}
+	if _, ok := cb.clients[chatboxID]; !ok {
+		cb.clients[chatboxID] = []*websocket.Conn{}
 	}
-	cb.clients[userID] = append(cb.clients[userID], conn)
+	cb.clients[chatboxID] = append(cb.clients[chatboxID], conn)
 	log.Printf("Add client : %+v\n", cb.clients)
 	cb.mu.Unlock()
 }
 
-func (cb *ChatBox) RemoveClient(userID int, conn *websocket.Conn) {
+func (cb *ChatBox) RemoveClient(chatboxID string, conn *websocket.Conn) {
 	cb.mu.Lock()
-	if _, ok := cb.clients[userID]; ok {
+	if _, ok := cb.clients[chatboxID]; ok {
 		// Find conn index
-		idx := cb.findConn(userID, conn)
+		idx := cb.findConn(chatboxID, conn)
 		// Remove conn from slice if conn found
 		if idx != -1 {
-			cb.clients[userID] = append(cb.clients[userID][:idx], cb.clients[userID][idx+1:]...)
+			cb.clients[chatboxID] = append(cb.clients[chatboxID][:idx], cb.clients[chatboxID][idx+1:]...)
 		}
 	}
 	log.Printf("Remove client : %+v\n", cb.clients)
 	cb.mu.Unlock()
 }
 
-func (cb *ChatBox) Broadcast(userID, destID int, curConn *websocket.Conn, message string) {
+func (cb *ChatBox) Broadcast(chatboxID string, curConn *websocket.Conn, message string) {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
 
-	log.Println("destID :", destID)
+	log.Println("chatboxID :", chatboxID)
 
-	// Send to destination user pools
-	for _, conn := range cb.clients[destID] {
-		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-		if err != nil {
-			log.Println("Error broadcasting message to user :", err)
-		}
-	}
-
-	// Send to current user pools except for current user connection
-	for _, conn := range cb.clients[userID] {
+	// Send to chatbox user pools except for current connection
+	for _, conn := range cb.clients[chatboxID] {
 		if conn == curConn {
 			continue
 		}
@@ -79,8 +71,8 @@ func (cb *ChatBox) Broadcast(userID, destID int, curConn *websocket.Conn, messag
 	log.Printf("Broadcast clients : %+v\n", cb.clients)
 }
 
-func (cb *ChatBox) findConn(userID int, conn *websocket.Conn) int {
-	for i, c := range cb.clients[userID] {
+func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
+	for i, c := range cb.clients[chatboxID] {
 		if c == conn {
 			return i
 		}
