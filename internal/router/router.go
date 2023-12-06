@@ -10,15 +10,9 @@ import (
 	"github.com/nickyrolly/ws-chat-demo/internal/usecase"
 )
 
-func Init(usercb *usecase.ChatBox, groupcb *usecase.GroupChatBox) {
+func Init() {
 	r := mux.NewRouter()
 	r.HandleFunc("/check", handler.CheckServices).Methods("GET")
-	r.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
-		handler.HandleChat(w, r, usercb, groupcb)
-	})
-	r.HandleFunc("/chat/history", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetChatHistory(w, r, usercb, groupcb)
-	}).Methods("GET")
 
 	http.Handle("/", r)
 
