@@ -26,6 +26,5 @@ func main() {
 	}
 
 	chatBox := usecase.NewChatBox()
-	groupChatBox := usecase.NewGroupChatBox()
-	router.Init(chatBox, groupChatBox)
+	router.Init(chatBox)
 }

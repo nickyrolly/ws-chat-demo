@@ -2,15 +2,12 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"sync"
-	"time"
+
+	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 
 	"github.com/gorilla/websocket"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository/chat_nsq"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
 type userConnMap map[string][]*websocket.Conn
@@ -81,60 +78,11 @@ func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
 }
 
 func (cb *ChatBox) PublishSaveChatHistory(params repository.ChatHistoryData) error {
-	// Publish a message
-	messageBody, err := json.Marshal(params)
-	if err != nil {
-		log.Println("Error Marshal:", err)
-		return err
-	}
-
-	err = chat_nsq.NSQProducer.Publish("save-chat-history-topic", messageBody)
-	if err != nil {
-		log.Println("Error Publish NSQ:", err)
-		return err
-	}
-
+	// excercise 3
 	return nil
 }
 
 func (cb *ChatBox) GetChatHistory(ctx context.Context, params repository.ChatHistoryData) ([]map[string]interface{}, error) {
-	var (
-		chatHistoryData = []map[string]interface{}{}
-		err             error
-	)
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(5)*time.Second)
-	defer cancel()
-	log.Printf("%+v", params)
-
-	rows, err := postgre.DBChat.QueryContext(ctx, postgre.QuerySelectChatHistory, params.UserIDA, params.UserIDB)
-	if err != nil {
-		log.Println("[GetChatHistory] Error QueryContext: ", err)
-		return chatHistoryData, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			data         map[string]interface{}
-			senderUserID int
-			message      string
-			replyTime    time.Time
-		)
-
-		err := rows.Scan(&senderUserID, &message, &replyTime)
-		if err != nil {
-			log.Println("[GetChatHistory] Error Scan: ", err)
-			return chatHistoryData, err
-		}
-
-		data = map[string]interface{}{
-			"sender_user_id": senderUserID,
-			"message":        message,
-			"reply_time":     replyTime,
-		}
-
-		chatHistoryData = append(chatHistoryData, data)
-	}
-
-	return chatHistoryData, nil
+	// excercise 3
+	return []map[string]interface{}{}, nil
 }
