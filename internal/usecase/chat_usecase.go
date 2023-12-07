@@ -1,11 +1,8 @@
 package usecase
 
 import (
-	"context"
 	"log"
 	"sync"
-
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 
 	"github.com/gorilla/websocket"
 )
@@ -75,14 +72,4 @@ func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
 		}
 	}
 	return -1
-}
-
-func (cb *ChatBox) PublishSaveChatHistory(params repository.ChatHistoryData) error {
-	// excercise 3
-	return nil
-}
-
-func (cb *ChatBox) GetChatHistory(ctx context.Context, params repository.ChatHistoryData) ([]map[string]interface{}, error) {
-	// excercise 3
-	return []map[string]interface{}{}, nil
 }

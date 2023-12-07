@@ -5,10 +5,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/gorilla/websocket"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 	"github.com/nickyrolly/ws-chat-demo/internal/usecase"
 )
 
@@ -71,13 +70,17 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 	var userChatboxID string
 
 	if groupID > 0 {
-		// Exercise 2
-		// Please complete this block
+		// Exercise 2.1
+		// Please complete this block to register user in group chatbox
 	} else {
-		// Excercise 1
-		// please complete this block
-		// add client
-		// defer remove client
+		chatboxUsers := []string{userIDStr, recipientIDStr}
+		if userID > recipientID {
+			chatboxUsers = []string{recipientIDStr, userIDStr}
+		}
+		userChatboxID = strings.Join(chatboxUsers, "-")
+
+		// Excercise 1.1
+		// please complete this block to register user in chatbox
 	}
 
 	for {
@@ -90,34 +93,11 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 			message := string(p)
 			fmt.Println("Received message:", message)
 			if groupID > 0 {
-				// Exercise 2
-				// Please complete this block
+				// groupChatBox.Broadcast(groupID, conn, message)
 			} else {
 				chatBox.Broadcast(userChatboxID, conn, message)
-
-				// Sort user id for A and B to be from lowest to highest
-				userIDA := userID
-				userIDB := recipientID
-
-				if userIDA > userIDB {
-					userIDA = recipientID
-					userIDB = userID
-				}
-
-				// Save message to database via NSQ
-				chatBox.PublishSaveChatHistory(repository.ChatHistoryData{
-					UserIDA:      userIDA,
-					UserIDB:      userIDB,
-					SenderUserID: userID,
-					Message:      message,
-					ReplyTime:    time.Now(),
-				})
 			}
 		}
 	}
 
-}
-
-func GetChatHistory(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox, groupChatBox *usecase.GroupChatBox) {
-	// chapter 3
 }
