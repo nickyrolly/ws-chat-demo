@@ -70,8 +70,8 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 	var userChatboxID string
 
 	if groupID > 0 {
-		// Exercise 2
-		// Please complete this block
+		// Exercise 2.1
+		// Please complete this block to register user in group chatbox
 	} else {
 		// Create user chatbox id
 		chatboxUsers := []string{userIDStr, recipientIDStr}

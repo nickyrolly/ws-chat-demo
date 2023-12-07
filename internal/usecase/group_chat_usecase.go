@@ -56,10 +56,8 @@ func (cb *GroupChatBox) Broadcast(groupID int, curConn *websocket.Conn, message 
 			continue
 		}
 
-		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-		if err != nil {
-			log.Println("Error broadcasting message to user :", err)
-		}
+		// Exercise 2.2
+		// Please complete this block to send message to users
 	}
 
 	log.Printf("Broadcast clients : %+v\n", cb.clients)
