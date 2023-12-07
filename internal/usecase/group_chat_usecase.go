@@ -1,16 +1,10 @@
 package usecase
 
 import (
-	"context"
-	"encoding/json"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository/chat_nsq"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
 type groupConnmap map[int][]*websocket.Conn
@@ -78,62 +72,4 @@ func (cb *GroupChatBox) findConn(groupID int, conn *websocket.Conn) int {
 		}
 	}
 	return -1
-}
-
-func (cb *GroupChatBox) PublishGroupSaveChatHistory(params repository.GroupChatHistoryData) error {
-	// Publish a message
-	messageBody, err := json.Marshal(params)
-	if err != nil {
-		log.Println("Error Marshal:", err)
-		return err
-	}
-
-	err = chat_nsq.NSQProducer.Publish("save-group-chat-history-topic", messageBody)
-	if err != nil {
-		log.Println("Error Publish NSQ:", err)
-		return err
-	}
-
-	return nil
-}
-
-func (cb *GroupChatBox) GetGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) ([]map[string]interface{}, error) {
-	var (
-		groupChatHistoryData = []map[string]interface{}{}
-		err                  error
-	)
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(5)*time.Second)
-	defer cancel()
-
-	rows, err := postgre.DBChat.QueryContext(ctx, postgre.QuerySelectGroupChatHistory, params.GroupID)
-	if err != nil {
-		log.Println("[GetGroupChatHistory] Error QueryContext: ", err)
-		return groupChatHistoryData, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			data         map[string]interface{}
-			senderUserID int
-			message      string
-			replyTime    time.Time
-		)
-
-		err := rows.Scan(&senderUserID, &message, &replyTime)
-		if err != nil {
-			log.Println("[GetGroupChatHistory] Error Scan: ", err)
-			return groupChatHistoryData, err
-		}
-
-		data = map[string]interface{}{
-			"sender_user_id": senderUserID,
-			"message":        message,
-			"reply_time":     replyTime,
-		}
-
-		groupChatHistoryData = append(groupChatHistoryData, data)
-	}
-
-	return groupChatHistoryData, nil
 }
