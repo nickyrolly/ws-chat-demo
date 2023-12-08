@@ -2,12 +2,14 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
+	"github.com/nickyrolly/ws-chat-demo/internal/repository/chat_nsq"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
@@ -76,6 +78,23 @@ func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
 		}
 	}
 	return -1
+}
+
+func (cb *ChatBox) PublishSaveChatHistory(params repository.ChatHistoryData) error {
+	// Publish a message
+	messageBody, err := json.Marshal(params)
+	if err != nil {
+		log.Println("Error Marshal:", err)
+		return err
+	}
+
+	err = chat_nsq.NSQProducer.Publish("save-chat-history-topic", messageBody)
+	if err != nil {
+		log.Println("Error Publish NSQ:", err)
+		return err
+	}
+
+	return nil
 }
 
 func (cb *ChatBox) GetChatHistory(ctx context.Context, params repository.ChatHistoryData) ([]map[string]interface{}, error) {

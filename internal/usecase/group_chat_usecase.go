@@ -2,12 +2,14 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
+	"github.com/nickyrolly/ws-chat-demo/internal/repository/chat_nsq"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 )
 
@@ -60,8 +62,10 @@ func (cb *GroupChatBox) Broadcast(groupID int, curConn *websocket.Conn, message 
 			continue
 		}
 
-		// Exercise 2.2
-		// Please complete this block to send message to users
+		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+		if err != nil {
+			log.Println("Error broadcasting message to user :", err)
+		}
 	}
 
 	log.Printf("Broadcast clients : %+v\n", cb.clients)
@@ -74,6 +78,23 @@ func (cb *GroupChatBox) findConn(groupID int, conn *websocket.Conn) int {
 		}
 	}
 	return -1
+}
+
+func (cb *GroupChatBox) PublishGroupSaveChatHistory(params repository.GroupChatHistoryData) error {
+	// Publish a message
+	messageBody, err := json.Marshal(params)
+	if err != nil {
+		log.Println("Error Marshal:", err)
+		return err
+	}
+
+	err = chat_nsq.NSQProducer.Publish("save-group-chat-history-topic", messageBody)
+	if err != nil {
+		log.Println("Error Publish NSQ:", err)
+		return err
+	}
+
+	return nil
 }
 
 func (cb *GroupChatBox) GetGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) ([]map[string]interface{}, error) {

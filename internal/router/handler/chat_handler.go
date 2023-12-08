@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
@@ -72,8 +73,8 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 	var userChatboxID string
 
 	if groupID > 0 {
-		// Exercise 2.1
-		// Please complete this block to register user in group chatbox
+		groupChatBox.AddClient(groupID, conn)
+		defer groupChatBox.RemoveClient(groupID, conn)
 	} else {
 		// Create user chatbox id
 		chatboxUsers := []string{userIDStr, recipientIDStr}
@@ -97,8 +98,33 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 			fmt.Println("Received message:", message)
 			if groupID > 0 {
 				groupChatBox.Broadcast(groupID, conn, message)
+				// Save message to database via NSQ
+				groupChatBox.PublishGroupSaveChatHistory(repository.GroupChatHistoryData{
+					GroupID:      groupID,
+					SenderUserID: userID,
+					Message:      message,
+					ReplyTime:    time.Now(),
+				})
 			} else {
 				chatBox.Broadcast(userChatboxID, conn, message)
+
+				// Sort user id for A and B to be from lowest to highest
+				userIDA := userID
+				userIDB := recipientID
+
+				if userIDA > userIDB {
+					userIDA = recipientID
+					userIDB = userID
+				}
+
+				// Save message to database via NSQ
+				chatBox.PublishSaveChatHistory(repository.ChatHistoryData{
+					UserIDA:      userIDA,
+					UserIDB:      userIDB,
+					SenderUserID: userID,
+					Message:      message,
+					ReplyTime:    time.Now(),
+				})
 			}
 		}
 	}
