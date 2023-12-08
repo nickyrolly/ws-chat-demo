@@ -13,6 +13,10 @@ import (
 func Init(usercb *usecase.ChatBox, groupcb *usecase.GroupChatBox) {
 	r := mux.NewRouter()
 	r.HandleFunc("/check", handler.CheckServices).Methods("GET")
+
+	r.HandleFunc("/user/register", handler.HandleRegister).Methods("POST")
+	r.HandleFunc("/user/login", handler.HandleLogin).Methods("POST")
+
 	r.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
 		handler.HandleChat(w, r, usercb, groupcb)
 	})
