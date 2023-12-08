@@ -1,10 +1,12 @@
 package usecase
 
 import (
+	"context"
 	"log"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 )
 
 type groupConnmap map[int][]*websocket.Conn
@@ -56,8 +58,10 @@ func (cb *GroupChatBox) Broadcast(groupID int, curConn *websocket.Conn, message 
 			continue
 		}
 
-		// Exercise 2.2
-		// Please complete this block to send message to users
+		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+		if err != nil {
+			log.Println("Error broadcasting message to user :", err)
+		}
 	}
 
 	log.Printf("Broadcast clients : %+v\n", cb.clients)
@@ -70,4 +74,22 @@ func (cb *GroupChatBox) findConn(groupID int, conn *websocket.Conn) int {
 		}
 	}
 	return -1
+}
+
+func (cb *GroupChatBox) PublishGroupSaveChatHistory(params repository.GroupChatHistoryData) error {
+	// Exercise 3.2.2
+	// Publish a message
+
+	return nil
+}
+
+func (cb *GroupChatBox) GetGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) ([]map[string]interface{}, error) {
+	//Exercise 3.4.2
+	var (
+		groupChatHistoryData = []map[string]interface{}{}
+		//Uncomment this section (3.4.2)
+		// err                  error
+	)
+
+	return groupChatHistoryData, nil
 }

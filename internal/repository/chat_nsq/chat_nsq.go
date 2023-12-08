@@ -1,14 +1,10 @@
 package chat_nsq
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/nickyrolly/ws-chat-demo/internal/domain"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository/postgre"
 	"github.com/nsqio/go-nsq"
 )
 
@@ -21,16 +17,13 @@ type ConsumerStruct struct {
 }
 
 var consumerList = []ConsumerStruct{
-	{
-		Topic:    "save-chat-history-topic",
-		Channel:  "chat-channel",
-		Function: consumerSaveChatHistory,
-	},
-	{
-		Topic:    "save-group-chat-history-topic",
-		Channel:  "chat-channel",
-		Function: consumerGroupSaveChatHistory,
-	},
+	//Exercise 3.1.3
+	//Register Topic name and Consumer for Chat Personal History
+	//--
+
+	//Exercise 3.2.3
+	//Register Topic name and Consumer for Group Personal History
+	//--
 }
 
 func InitNSQProducer() error {
@@ -66,47 +59,15 @@ func InitNSQConsumer() error {
 }
 
 func consumerSaveChatHistory(message *nsq.Message) error {
-	var (
-		data repository.ChatHistoryData
-		err  error
-	)
-	err = json.Unmarshal(message.Body, &data)
-	if err != nil {
-		log.Println("Error Unmarshal: ", err.Error())
-		message.Finish()
-		return err
-	}
+	//Exercise 3.1.4
+	//Create consumer handler for Inserting Chat Personal History Data
 
-	err = postgre.InsertChatHistory(context.Background(), data)
-	if err != nil {
-		log.Println("Error InsertChatHistory: ", err.Error())
-		message.Requeue(1)
-		return err
-	}
-
-	message.Finish()
 	return nil
 }
 
 func consumerGroupSaveChatHistory(message *nsq.Message) error {
-	var (
-		data repository.GroupChatHistoryData
-		err  error
-	)
-	err = json.Unmarshal(message.Body, &data)
-	if err != nil {
-		log.Println("Error Unmarshal: ", err.Error())
-		message.Finish()
-		return err
-	}
+	//Exercise 3.2.4
+	//Create consumer handler for Inserting Chat Group History Data
 
-	err = postgre.InsertGroupChatHistory(context.Background(), data)
-	if err != nil {
-		log.Println("Error InsertChatHistory: ", err.Error())
-		message.Requeue(1)
-		return err
-	}
-
-	message.Finish()
 	return nil
 }

@@ -1,10 +1,12 @@
 package usecase
 
 import (
+	"context"
 	"log"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 )
 
 type userConnMap map[string][]*websocket.Conn
@@ -72,4 +74,24 @@ func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
 		}
 	}
 	return -1
+}
+
+func (cb *ChatBox) PublishSaveChatHistory(params repository.ChatHistoryData) error {
+	//Exercise 3.1.2
+	// Publish a message to NSQ
+
+	return nil
+}
+
+func (cb *ChatBox) GetChatHistory(ctx context.Context, params repository.ChatHistoryData) ([]map[string]interface{}, error) {
+	var (
+		chatHistoryData = []map[string]interface{}{}
+	)
+
+	//Exercise 3.3.3
+	// Please complete this block to add GetChatHistory Handler functionality
+	// Sort user id for A and B to be from lowest to highest
+	//--
+
+	return chatHistoryData, nil
 }

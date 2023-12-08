@@ -3,7 +3,6 @@ package postgre
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -50,21 +49,17 @@ func InitPostgreSqltDB(connMaster string, connSlave string) error {
 }
 
 func InsertChatHistory(ctx context.Context, params repository.ChatHistoryData) error {
-	_, err := DBChat.ExecContext(ctx, QueryInsertChatHistory, params.UserIDA, params.UserIDB, params.SenderUserID, params.Message, params.ReplyTime)
-	if err != nil {
-		log.Printf("Error insert chat history: %s\n", err.Error())
-		return err
-	}
+	//Exercise 3.1.5
+	//DB Insertion for Personal Chat history
+	//--
 
 	return nil
 }
 
 func InsertGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) error {
-	_, err := DBChat.ExecContext(ctx, QueryInsertGroupChatHistory, params.GroupID, params.SenderUserID, params.Message, params.ReplyTime)
-	if err != nil {
-		log.Printf("Error insert chat history: %s\n", err.Error())
-		return err
-	}
+	//Exercise 3.2.5
+	//DB Insertion for Group Chat history
+	//--
 
 	return nil
 }
