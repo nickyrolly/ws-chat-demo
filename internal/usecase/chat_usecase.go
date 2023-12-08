@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
@@ -77,8 +78,14 @@ func (cb *ChatBox) findConn(chatboxID string, conn *websocket.Conn) int {
 }
 
 func (cb *ChatBox) PublishSaveChatHistory(params repository.ChatHistoryData) error {
-	//Exercise 3.1.2
-	// Publish a message to NSQ
+	// messageBody, err := json.Marshal(params)
+	// if err != nil {
+	// 	log.Println("Error Marshal:", err)
+	// 	return err
+	// }
+
+	// Exercise 3.1.2
+	// Please complete this block to publish personal chat message via NSQ
 
 	return nil
 }
@@ -87,11 +94,37 @@ func (cb *ChatBox) GetChatHistory(ctx context.Context, params repository.ChatHis
 	var (
 		chatHistoryData = []map[string]interface{}{}
 	)
-
-	//Exercise 3.3.3
-	// Please complete this block to add GetChatHistory Handler functionality
 	// Sort user id for A and B to be from lowest to highest
-	//--
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(5)*time.Second)
+	defer cancel()
+	log.Printf("%+v", params)
+
+	// Exercise 3.3.3
+	// Please complete this block to get chat history data from database
+
+	// Uncomment code below after get chat history from DB has implemented (Exercise 3.3.3)
+	// for rows.Next() {
+	// 	var (
+	// 		data         map[string]interface{}
+	// 		senderUserID int
+	// 		message      string
+	// 		replyTime    time.Time
+	// 	)
+
+	// 	err := rows.Scan(&senderUserID, &message, &replyTime)
+	// 	if err != nil {
+	// 		log.Println("[GetChatHistory] Error Scan: ", err)
+	// 		return chatHistoryData, err
+	// 	}
+
+	// 	data = map[string]interface{}{
+	// 		"sender_user_id": senderUserID,
+	// 		"message":        message,
+	// 		"reply_time":     replyTime,
+	// 	}
+
+	// 	chatHistoryData = append(chatHistoryData, data)
+	// }
 
 	return chatHistoryData, nil
 }

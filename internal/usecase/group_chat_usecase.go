@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
@@ -77,19 +78,53 @@ func (cb *GroupChatBox) findConn(groupID int, conn *websocket.Conn) int {
 }
 
 func (cb *GroupChatBox) PublishGroupSaveChatHistory(params repository.GroupChatHistoryData) error {
+	// messageBody, err := json.Marshal(params)
+	// if err != nil {
+	// 	log.Println("Error Marshal:", err)
+	// 	return err
+	// }
+
 	// Exercise 3.2.2
-	// Publish a message
+	// Please complete this block to publish message to NSQ topic
 
 	return nil
 }
 
 func (cb *GroupChatBox) GetGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) ([]map[string]interface{}, error) {
-	//Exercise 3.4.2
 	var (
 		groupChatHistoryData = []map[string]interface{}{}
-		//Uncomment this section (3.4.2)
-		// err                  error
+		//err                  error
 	)
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(5)*time.Second)
+	defer cancel()
+
+	// Exercise 3.4.2
+	// Please complete this block to get group chat history data from database
+
+	// Uncomment code below after get chat history from DB has implemented (Exercise 3.4.2)
+	// for rows.Next() {
+	// 	var (
+	// 		data         map[string]interface{}
+	// 		senderUserID int
+	// 		message      string
+	// 		replyTime    time.Time
+	// 	)
+
+	// 	err := rows.Scan(&senderUserID, &message, &replyTime)
+	// 	if err != nil {
+	// 		log.Println("[GetGroupChatHistory] Error Scan: ", err)
+	// 		return groupChatHistoryData, err
+	// 	}
+
+	// 	data = map[string]interface{}{
+	// 		"sender_user_id": senderUserID,
+	// 		"message":        message,
+	// 		"reply_time":     replyTime,
+	// 	}
+
+	// 	groupChatHistoryData = append(groupChatHistoryData, data)
+	// }
 
 	return groupChatHistoryData, nil
 }

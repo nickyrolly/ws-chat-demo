@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nickyrolly/ws-chat-demo/internal/repository"
@@ -100,7 +101,14 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 				groupChatBox.Broadcast(groupID, conn, message)
 
 				// Exercise 3.2.1
-				// Save group message to database via NSQ
+				// Please complete this block to publish group chat message data via NSQ
+
+				groupChatBox.PublishGroupSaveChatHistory(repository.GroupChatHistoryData{
+					GroupID:      groupID,
+					SenderUserID: userID,
+					Message:      message,
+					ReplyTime:    time.Now(),
+				})
 
 			} else {
 				chatBox.Broadcast(userChatboxID, conn, message)
@@ -115,8 +123,8 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 					userIDB = userID
 				}
 
-				//Exercise 3.1.1
-				// Save personal message to database via NSQ
+				// Exercise 3.1.1
+				// Please complete this block to publish personal message data via NSQ
 			}
 		}
 	}
@@ -126,32 +134,31 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 func GetChatHistory(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox, groupChatBox *usecase.GroupChatBox) {
 	var (
 		//Uncomment this section (3.3.2)
-		// userID          int
-		// recipientID     int
+		userID          int
+		recipientID     int
 		groupID         int
 		chatHistoryData []map[string]interface{}
 		response        map[string]interface{}
 		err             error
 	)
 
-	//Uncomment this section (3.3.2)
-	// userIDStr := r.URL.Query().Get("user_id")
-	// userID, err = strconv.Atoi(userIDStr)
-	// if err != nil {
-	// 	log.Printf("Invalid user_id : \"%s\"\n", userIDStr)
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
+	userIDStr := r.URL.Query().Get("user_id")
+	userID, err = strconv.Atoi(userIDStr)
+	if err != nil {
+		log.Printf("Invalid user_id : \"%s\"\n", userIDStr)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	// recipientIDStr := r.URL.Query().Get("recipient_id")
-	// if recipientIDStr != "" {
-	// 	recipientID, err = strconv.Atoi(recipientIDStr)
-	// 	if err != nil {
-	// 		log.Printf("Invalid recipient_id : \"%s\"\n", recipientIDStr)
-	// 		w.WriteHeader(http.StatusBadRequest)
-	// 		return
-	// 	}
-	// }
+	recipientIDStr := r.URL.Query().Get("recipient_id")
+	if recipientIDStr != "" {
+		recipientID, err = strconv.Atoi(recipientIDStr)
+		if err != nil {
+			log.Printf("Invalid recipient_id : \"%s\"\n", recipientIDStr)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
 
 	groupIDStr := r.URL.Query().Get("group_id")
 	if groupIDStr != "" {
@@ -163,24 +170,31 @@ func GetChatHistory(w http.ResponseWriter, r *http.Request, chatBox *usecase.Cha
 		}
 	}
 
-	//Uncomment this section (3.3.2)
-	// if recipientIDStr == "" && groupIDStr == "" {
-	// 	log.Println("Empty resipient_id or group_id")
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
+	if recipientIDStr == "" && groupIDStr == "" {
+		log.Println("Empty resipient_id or group_id")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if groupID > 0 {
-		//Exercise 3.4.1
+		// Exercise 3.4.1
+		// Please complete this block to call get group chat history functionality
+
 		chatHistoryData, err = groupChatBox.GetGroupChatHistory(r.Context(), repository.GroupChatHistoryData{
 			GroupID: groupID,
 		})
 	} else {
-		//Exercise 3.3.2
-		// Please complete this block to add new handler for Chat history
-
 		// Sort user id for A and B to be from lowest to highest
-		//--
+		userIDA := userID
+		userIDB := recipientID
+
+		if userIDA > userIDB {
+			userIDA = recipientID
+			userIDB = userID
+		}
+
+		// Exercise 3.3.2
+		// Please complete this block to call chat history functionality
 	}
 
 	if err != nil {

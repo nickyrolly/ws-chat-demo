@@ -1,10 +1,12 @@
 package chat_nsq
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/nickyrolly/ws-chat-demo/internal/domain"
+	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 	"github.com/nsqio/go-nsq"
 )
 
@@ -17,13 +19,16 @@ type ConsumerStruct struct {
 }
 
 var consumerList = []ConsumerStruct{
-	//Exercise 3.1.3
-	//Register Topic name and Consumer for Chat Personal History
-	//--
-
-	//Exercise 3.2.3
-	//Register Topic name and Consumer for Group Personal History
-	//--
+	{
+		Topic:    "save-chat-history-topic",
+		Channel:  "chat-channel",
+		Function: consumerSaveChatHistory,
+	},
+	{
+		Topic:    "save-group-chat-history-topic",
+		Channel:  "chat-channel",
+		Function: consumerGroupSaveChatHistory,
+	},
 }
 
 func InitNSQProducer() error {
@@ -59,15 +64,41 @@ func InitNSQConsumer() error {
 }
 
 func consumerSaveChatHistory(message *nsq.Message) error {
-	//Exercise 3.1.4
-	//Create consumer handler for Inserting Chat Personal History Data
+	var (
+		data repository.ChatHistoryData
+		err  error
+	)
+	err = json.Unmarshal(message.Body, &data)
+	if err != nil {
+		log.Println("Error Unmarshal: ", err.Error())
+		message.Finish()
+		return err
+	}
+
+	// Exercise 3.1.3
+	// Please complete this block to create consumer handler for Insert Chat History
+
+	message.Finish()
 
 	return nil
 }
 
 func consumerGroupSaveChatHistory(message *nsq.Message) error {
-	//Exercise 3.2.4
-	//Create consumer handler for Inserting Chat Group History Data
+	var (
+		data repository.GroupChatHistoryData
+		err  error
+	)
+	err = json.Unmarshal(message.Body, &data)
+	if err != nil {
+		log.Println("Error Unmarshal: ", err.Error())
+		message.Finish()
+		return err
+	}
+
+	// Exercise 3.2.3
+	// Please complete this block to create consumer handler for inserting chat group history data
+
+	message.Finish()
 
 	return nil
 }

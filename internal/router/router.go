@@ -17,9 +17,8 @@ func Init(usercb *usecase.ChatBox, groupcb *usecase.GroupChatBox) {
 		handler.HandleChat(w, r, usercb, groupcb)
 	})
 
-	//Exercise 3.3.1
+	// Exercise 3.3.1
 	// Please complete this block to add new route for Get Historical Chat From Database
-	//--
 
 	http.Handle("/", r)
 
