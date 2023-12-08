@@ -21,7 +21,7 @@ func Init(usercb *usecase.ChatBox, groupcb *usecase.GroupChatBox) {
 
 	port := "8080"
 	fmt.Printf("Listening on port %s...\n", port)
-	go usecase.NsqHealthCheck()
+	// go usecase.NsqHealthCheck()
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
