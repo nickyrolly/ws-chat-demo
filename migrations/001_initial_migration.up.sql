@@ -16,3 +16,10 @@ CREATE TABLE public.group_chat_history (
 	reply_time timestamp NOT null,
 	CONSTRAINT room_pkey PRIMARY KEY (group_chat_id)
 );
+
+CREATE TABLE public.user (
+	id bigserial NOT NULL PRIMARY KEY,
+	name VARCHAR(255) NULL,
+	username VARCHAR(255) NOT  NULL,
+	password VARCHAR(255) NOT NULL
+);

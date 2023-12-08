@@ -10,6 +10,13 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+)
+
+require (
 	github.com/golang/snappy v0.0.3 // indirect
+	github.com/gorilla/websocket v1.5.1
 	github.com/jmoiron/sqlx v1.3.5 // indirect
+	golang.org/x/crypto v0.16.0
 )
