@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/nickyrolly/ws-chat-demo/internal/repository"
 	"github.com/nickyrolly/ws-chat-demo/internal/usecase"
 )
 
@@ -103,15 +101,7 @@ func HandleChat(w http.ResponseWriter, r *http.Request, chatBox *usecase.ChatBox
 				// Exercise 3.2.1
 				// Please complete this block to publish group chat message data via NSQ
 
-				groupChatBox.PublishGroupSaveChatHistory(repository.GroupChatHistoryData{
-					GroupID:      groupID,
-					SenderUserID: userID,
-					Message:      message,
-					ReplyTime:    time.Now(),
-				})
-
 			} else {
-				chatBox.Broadcast(userChatboxID, conn, message)
 				chatBox.Broadcast(userChatboxID, conn, message)
 
 				// Sort user id for A and B to be from lowest to highest
@@ -179,10 +169,6 @@ func GetChatHistory(w http.ResponseWriter, r *http.Request, chatBox *usecase.Cha
 	if groupID > 0 {
 		// Exercise 3.4.1
 		// Please complete this block to call get group chat history functionality
-
-		chatHistoryData, err = groupChatBox.GetGroupChatHistory(r.Context(), repository.GroupChatHistoryData{
-			GroupID: groupID,
-		})
 	} else {
 		// Sort user id for A and B to be from lowest to highest
 		userIDA := userID

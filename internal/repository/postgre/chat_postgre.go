@@ -60,10 +60,6 @@ func InsertChatHistory(ctx context.Context, params repository.ChatHistoryData) e
 }
 
 func InsertGroupChatHistory(ctx context.Context, params repository.GroupChatHistoryData) error {
-	//Exercise 3.2.5
-	//DB Insertion for Group Chat history
-	//--
-
 	_, err := DBChat.ExecContext(ctx, QueryInsertGroupChatHistory, params.GroupID, params.SenderUserID, params.Message, params.ReplyTime)
 	if err != nil {
 		log.Printf("Error insert chat history: %s\n", err.Error())
